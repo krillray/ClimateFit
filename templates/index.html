@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTC-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device=width, initial-scale=1.0">
     <title>ClimFit</title>
 </head>
@@ -10,7 +10,36 @@
         <h1>ClimFit</h1>
     </header>
     <main>
-        <h1>WIP</h1>
+        <button onclick="updateUI()">Refresh</button>
+
+        <div id="fitbox">
+
+        </div>
+
+        <script>
+            async function updateUI() {
+                const display = document.getElementById('fitbox');
+                display.innerText = "Checking The Weather..";
+
+                try {
+                    const response = await fetch ('/get-weather')
+                    const data = await response.json();
+
+                    display.style.backgroundColor = data.color;
+                    display.style.padding = "20px";
+                    display.style.borderRadius = "10px";
+
+                    display.innerHTML = `
+                    <img src="${data.icon}" alt="weather icon" style="width:80px;"
+                    <p>Temp: ${data.temp}°F</p>
+                    <p><strong>Suggestion: ${data.advice}</strong></p>
+                    `;
+                } catch (error) {
+                    display.innerText = "Error Connecting to server.";
+                }
+            }
+            updateUI();
+        </script>
 
     </main>
 

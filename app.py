@@ -20,11 +20,29 @@ def get_weather():
     
     current = weather_data['properties']['periods'][0]
     
+    temp = current['temperature']
+
+    if temp < 32:
+        advice = "Freezing out there! wear a good heavy coat, boot and gloves."
+        color = "#a2d2ff"
+    elif temp < 60:
+        advice = "chilly! wear a jacket or sweatshirt"
+        color = "#fefae0"
+    else:
+        advice = "warm out, T-Shirt will suffice"
+        color = "#ffb703"
+            
+            
+            
+            
+            
     return jsonify({
-        "temp":current['temperature'],
+        "temp": temp,
+        "icon": current['icon'],
         "shortForecast": current['shortForecast'],
-        "advice": "wear a coat!" if current['temperature'] < 50 else "T-Shirt time"
+        "advice": advice,
+        "color": color
         })
     
 if __name__ == '__main__':
-        app.run(debug=True)
+    app.run(debug=True)
