@@ -18,20 +18,53 @@ def get_weather():
     weather_res = requests.get(forecast_url, headers=headers, timeout=10)
     weather_data = weather_res.json()
     
-    current = weather_data['properties']['periods'][0]
+    all_periods = weather_data['properties']['periods']
+    
+    forecast_list = []
+    
+    for period in all_periods:
+        if period['isDaytime']:
+            forecast_list.append({
+                "name": period['name'],
+                "temp": period['temperature'],
+                "icon": period['icon'],
+                "short": period['shortForecast']
+            })
+        if len(forecast_list) == 5:
+            break
+    
+    current = all_periods[0]
     
     temp = current['temperature']
+    forecast_text = current ['shortForecast'].lower()
+    wind_numbers = current['windSpeed'].split()[0]
+    
+    try:
+        wind_val = int(wind_numbers)
+    except ValueError:
+        wind_val = 0 #safety check
 
     if temp < 32:
-        advice = "Freezing out there! wear a good heavy coat, boot and gloves."
+        advice = "Freezing out there! wear a good heavy coat, boot and gloves. <br>"
         color = "#a2d2ff"
     elif temp < 60:
-        advice = "chilly! wear a jacket or sweatshirt"
+        advice = "chilly! wear a jacket or sweatshirt. <br>"
         color = "#fefae0"
     else:
-        advice = "warm out, T-Shirt will suffice"
+        advice = "warm out, T-Shirt will suffice. <br>"
         color = "#ffb703"
-            
+        
+    if wind_val > 20:
+        advice += "High Winds! it'll be much colder than what the forecast says, be prepared!"
+    elif wind_val > 10:
+        advice += "A little bit Windy today."
+
+    if "snow" in forecast_text:
+        advice+= "Also, Watch out for snow! you should probably wear some waterproof shoes."
+    elif "rain" in forecast_text or "showers" in forecast_text:
+        advice += "Looks Like Rain, you should bring an umbrella or a raincoat."
+    print(f"DEBUG: The whole dictionary looks like this: {current}")
+    
             
             
             
@@ -40,8 +73,10 @@ def get_weather():
         "temp": temp,
         "icon": current['icon'],
         "shortForecast": current['shortForecast'],
+        "wind": f"{current['windSpeed']} {current['windDirection']}",
         "advice": advice,
-        "color": color
+        "color": color,
+        "five_day": forecast_list
         })
     
 if __name__ == '__main__':

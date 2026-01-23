@@ -31,8 +31,11 @@
 
                     display.innerHTML = `
                     <img src="${data.icon}" alt="weather icon" style="width:80px;"
-                    <p>Temp: ${data.temp}°F</p>
-                    <p><strong>Suggestion: ${data.advice}</strong></p>
+                    <h2>Temp: ${data.temp}°F</h2>
+                    <p><strong>Conditions:</strong> ${data.shortForecast}</p>
+                    <p><strong>Wind:</strong> ${data.wind}</p>
+                    <hr>
+                    <p style="font-size: 1.2rem;"><strong>Suggestion: ${data.advice}</strong></p>
                     `;
                 } catch (error) {
                     display.innerText = "Error Connecting to server.";
