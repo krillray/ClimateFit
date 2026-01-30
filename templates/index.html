@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device=width, initial-scale=1.0">
+    <link rel="stylesheet" href= "{{url_for('static', filename='style.css') }}">
     <title>ClimFit</title>
 </head>
 <body>
@@ -10,35 +11,63 @@
         <h1>ClimFit</h1>
     </header>
     <main>
+
+        <div class="search-container">
+            <input type="text" id="cityInput" placeholder="Enter city (e.g. Syracuse, NY)">
+            <button onclick="updateUI()">Search/</button>
+
+        </div>
         <button onclick="updateUI()">Refresh</button>
 
         <div id="fitbox">
-
+            <p>loading forecast</p>
         </div>
 
         <script>
             async function updateUI() {
+                const cityValue = document.getElementById('cityInput').value || 'Syracuse, NY'
                 const display = document.getElementById('fitbox');
                 display.innerText = "Checking The Weather..";
 
                 try {
-                    const response = await fetch ('/get-weather')
+                    const response = await fetch (`/get-weather?city=${encodeURIComponent(cityValue)}`)
                     const data = await response.json();
+                    
+                    if (data.error) {
+                        display.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                        return;
+                    }
 
                     display.style.backgroundColor = data.color;
-                    display.style.padding = "20px";
-                    display.style.borderRadius = "10px";
 
-                    display.innerHTML = `
-                    <img src="${data.icon}" alt="weather icon" style="width:80px;"
-                    <h2>Temp: ${data.temp}°F</h2>
-                    <p><strong>Conditions:</strong> ${data.shortForecast}</p>
-                    <p><strong>Wind:</strong> ${data.wind}</p>
-                    <hr>
-                    <p style="font-size: 1.2rem;"><strong>Suggestion: ${data.advice}</strong></p>
+                    let html = `
+                        <h2>${data.city || cityValue}</h2>
+                        <img src="${data.icon}" alt="weather icon" style='width:100px;'>
+                        <h3>${data.temp}°F</h3>
+                        <p><strong>${data.shortForecast}</strong> | Wind: ${data.wind}</p>
+                        <div class="advice-box">
+                            ${data.advice}
+                        </div>
+                        <hr>
+                        <h4>5 Day forecast</h4>
+                        <div class="forecast-container">
                     `;
+
+                    data.five_day.forEach(day => {
+                        html += `
+                            <div class="day-card">
+                                <p style="margin:5px; font-weight: bold;">${day.name.substring(0,3)}</p>
+                                <img src="${day.icon}" style="width:35px;">
+                                <p style="margin 5px 0;">${day.temp}°F</p>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>'
+                    display.innerHTML = html;
                 } catch (error) {
                     display.innerText = "Error Connecting to server.";
+                    console.error(error)
                 }
             }
             updateUI();

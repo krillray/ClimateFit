@@ -1,5 +1,5 @@
 """Weather application using Flask and Weather.gov API."""
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 import requests
 app = Flask(__name__)
 
@@ -10,8 +10,21 @@ def home():
 
 @app.route('/get-weather')
 def get_weather():
-    headers = {'User-Agent': 'MyWeatherApp'}
-    point_res = requests.get("https://api.weather.gov/points/43.0481,-76.1474", headers=headers, timeout=10)
+    city = request.args.get('city', 'Syracuse, NY')
+    headers = {'User-Agent': 'ClimFitApp'}
+    
+    geo_url = f"https://nominatim.openstreetmap.org/search?q={city}&format=json&limit=1"
+    
+    geo_res = requests.get(geo_url, headers=headers)
+    geo_data = geo_res.json()
+    
+    if not geo_data:
+        return jsonify({"error": "City Not Found! maybe try adding the state or country."})
+    lat = geo_data[0]['lat']
+    lon = geo_data[0]['lon']
+    display_name = geo_data[0]['display_name'].split(',')[0]
+    
+    point_res = requests.get(f"https://api.weather.gov/points/{lat},{lon}", headers=headers, timeout=10)
     points_data = point_res.json()
     
     forecast_url = points_data['properties']['forecast']
@@ -70,6 +83,7 @@ def get_weather():
             
             
     return jsonify({
+        "city": display_name,
         "temp": temp,
         "icon": current['icon'],
         "shortForecast": current['shortForecast'],
